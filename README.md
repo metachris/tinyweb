@@ -1,8 +1,9 @@
-## TinyWeb [![Build Status](https://travis-ci.org/belyalov/tinyweb.svg?branch=master)](https://travis-ci.org/belyalov/tinyweb)
+## TinyWeb
 
 Simple, lightweight, async HTTP webserver for tiny devices like **ESP8266** / **ESP32** running [micropython](https://github.com/micropython/micropython).
 
 ### Features
+
 * Fully asynchronous when using with [uasyncio](https://github.com/micropython/micropython-lib/tree/master/uasyncio) library for MicroPython.
 * [Flask](http://flask.pocoo.org/) / [Flask-RESTful](https://flask-restful.readthedocs.io/en/latest/) like API.
 * *Tiny* memory usage. So you can run it on devices like **ESP8266 / ESP32** with 64K/96K of onboard RAM. BTW, there is a huge room for optimizations - so your contributions are warmly welcomed.
