@@ -8,8 +8,6 @@ $ curl -vvvv http://localhost:8081/redirect
 """
 import tinyweb
 
-
-# Create web server application
 app = tinyweb.webserver()
 
 
@@ -22,7 +20,7 @@ async def index(request, response):
 
 # Catch all requests with an invalid URL
 @app.catchall()
-def catchall_handler(request, response):
+async def catchall_handler(request, response):
     response.code = 404
     await response.html('<html><body><h1>My custom 404</h1></html>\n')
 
