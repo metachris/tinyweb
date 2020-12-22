@@ -3,7 +3,6 @@ Tiny Web - pretty simple and powerful web server for tiny platforms like ESP8266
 MIT license
 (C) Konstantin Belyalov 2017-2018
 """
-import logging
 import uasyncio as asyncio
 import uasyncio.core
 import ujson as json
@@ -13,8 +12,8 @@ import sys
 import uerrno as errno
 import usocket as socket
 
-
-log = logging.getLogger('WEB')
+log_err = lambda msg: print('ERROR:WEB:%s' % msg)
+log_exc = lambda exc, msg: print('ERROR:WEB:%s\n%s' % (msg, exc))
 
 # uasyncio v3 is shipped with MicroPython 1.13, and contains some subtle
 # but breaking changes. See also https://github.com/peterhinch/micropython-async/blob/master/v3/README.md
@@ -506,16 +505,16 @@ class webserver:
                 try:
                     await resp.error(500)
                 except Exception as e:
-                    log.exc(e, "")
+                    log_exc(e, "")
         except HTTPException as e:
             try:
                 await resp.error(e.code)
             except Exception as e:
-                log.exc(e)
+                log_exc(e)
         except Exception as e:
             # Unhandled expection in user's method
-            log.error(req.path.decode())
-            log.exc(e, "")
+            log_error(req.path.decode())
+            log_exc(e, "")
             try:
                 await resp.error(500)
                 # Send exception info if desired
