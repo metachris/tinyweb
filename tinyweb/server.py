@@ -22,8 +22,17 @@ import sys
 import uerrno as errno
 import usocket as socket
 
-log_err = lambda msg: print('ERROR:WEB:%s' % msg)
-log_exc = lambda exc, msg: print('ERROR:WEB:%s\n%s' % (msg, exc))
+# Import logging if it's available, else fallback to print
+try:
+    import logging
+    log = logging.getLogger('WEB')
+    log_err = log.error
+    log_exc = log.exc
+except ImportError:
+    log_err = lambda msg: print('ERROR:WEB:%s' % msg)
+    def log_exc(exc, msg):
+        log_err(msg)
+        sys.print_exception(exc)
 
 # uasyncio v3 is shipped with MicroPython 1.13, and contains some subtle
 # but breaking changes. See also https://github.com/peterhinch/micropython-async/blob/master/v3/README.md
