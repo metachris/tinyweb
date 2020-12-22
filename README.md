@@ -1,7 +1,6 @@
 ## TinyWeb [![Build Status](https://travis-ci.org/belyalov/tinyweb.svg?branch=master)](https://travis-ci.org/belyalov/tinyweb)
-Simple and lightweight (thus - *tiny*) HTTP server for tiny devices like **ESP8266** / **ESP32** running [micropython](https://github.com/micropython/micropython).
-Having simple HTTP server allows developers to create nice and modern UI for their IoT devices.
-By itself - *tinyweb* is just simple TCP server running on top of `uasyncio` - library for micropython, therefore *tinyweb* is single threaded server.
+
+Simple, lightweight, async HTTP webserver for tiny devices like **ESP8266** / **ESP32** running [micropython](https://github.com/micropython/micropython).
 
 ### Features
 * Fully asynchronous when using with [uasyncio](https://github.com/micropython/micropython-lib/tree/master/uasyncio) library for MicroPython.
@@ -12,39 +11,18 @@ By itself - *tinyweb* is just simple TCP server running on top of `uasyncio` - l
 
 ### Requirements
 
-* [logging](https://github.com/micropython/micropython-lib/tree/master/logging)
-
 On MicroPython <1.13:
 
 * [uasyncio](https://github.com/micropython/micropython-lib/tree/master/uasyncio) - micropython version of *async* python library.
 * [uasyncio-core](https://github.com/micropython/micropython-lib/tree/master/uasyncio.core)
 
-### Quickstart
-The easist way to try it - is using pre-compiled firmware for ESP8266 / ESP32.
-Instructions below are tested with *NodeMCU* devices. For any other devices instructions could be a bit different, so keep in mind.
-**CAUTION**: If you proceed with installation all data on your device will **lost**!
+# Getting started
 
-#### Installation - ESP8266
-* Download latest `firmware_esp8266-version.bin` from [releases](https://github.com/belyalov/tinyweb/releases).
-* Install `esp-tool` if you haven't done already: `pip install esptool`
-* Erase flash: `esptool.py --port <UART PORT> --baud 256000 erase_flash`
-* Flash firmware: `esptool.py --port <UART PORT> --baud 256000 write_flash -fm dio 0 firmware_esp8266-v1.3.2.bin`
+Let's develop a hello world web app:
 
-#### Installation - ESP32
-* Download latest `firmware_esp32-version.bin` from [releases](https://github.com/belyalov/tinyweb/releases).
-* Install `esp-tool` if you haven't done already: `pip install esptool`
-* Erase flash: `esptool.py --port <UART PORT> --baud 256000 erase_flash`
-* Flash firmware: `esptool.py --port <UART PORT> --baud 256000 write_flash -fm dio 0x1000 firmware_esp32-v1.3.2.bin`
-
-#### Hello world
-Let's develop [Hello World](https://github.com/belyalov/tinyweb/blob/master/examples/hello_world.py) web app:
 ```python
 import tinyweb
-
-
-# Create web server application
 app = tinyweb.webserver()
-
 
 # Index page
 @app.route('/')
@@ -52,6 +30,16 @@ async def index(request, response):
     # Send HTML page with content-type text/html
     await response.html('<html><body><h1>Hello, world! (<a href="/table">table</a>)</h1></html>\n')
 
+# Catch all requests with an invalid URL
+@app.catchall()
+async def catchall_handler(request, response):
+    response.code = 404
+    await response.html('<html><body><h1>My custom 404</h1></html>\n')
+
+# HTTP redirection
+@app.route('/redirect')
+async def redirect(request, response):
+    await response.redirect('/')
 
 # Another one, more complicated page
 @app.route('/table')
@@ -65,11 +53,9 @@ async def table(request, response):
     await response.send('</table>'
                         '</html>')
 
-
-def run():
-    app.run(host='0.0.0.0', port=8081)
-
+app.run(host='0.0.0.0', port=8081)
 ```
+
 Simple? Let's try it!
 Flash your device with firmware, open REPL and type:
 ```python
