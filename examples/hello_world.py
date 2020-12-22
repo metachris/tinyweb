@@ -1,7 +1,10 @@
 #!/usr/bin/env micropython
 """
-MIT license
-(C) Konstantin Belyalov 2017-2018
+Test the server routes:
+
+$ curl -vvvv http://localhost:8081
+$ curl -vvvv http://localhost:8081/table
+$ curl -vvvv http://localhost:8081/redirect
 """
 import tinyweb
 
@@ -13,16 +16,20 @@ app = tinyweb.webserver()
 # Index page
 @app.route('/')
 async def index(request, response):
-    # Start HTTP response with content-type text/html
-    await response.start_html()
-    # Send actual HTML page
-    await response.send('<html><body><h1>Hello, world! (<a href="/table">table</a>)</h1></html>\n')
+    # Send HTML page with content-type text/html
+    await response.html('<html><body><h1>Hello, world! (<a href="/table">table</a>)</h1></html>\n')
+
+
+# Catch all requests with an invalid URL
+@app.catchall()
+def catchall_handler(request, response):
+    response.code = 404
+    await response.html('<html><body><h1>My custom 404</h1></html>\n')
 
 
 # HTTP redirection
 @app.route('/redirect')
 async def redirect(request, response):
-    # Start HTTP response with content-type text/html
     await response.redirect('/')
 
 
@@ -30,8 +37,7 @@ async def redirect(request, response):
 @app.route('/table')
 async def table(request, response):
     # Start HTTP response with content-type text/html
-    await response.start_html()
-    await response.send('<html><body><h1>Simple table</h1>'
+    await response.html('<html><body><h1>Simple table</h1>'
                         '<table border=1 width=400>'
                         '<tr><td>Name</td><td>Some Value</td></tr>')
     for i in range(10):
@@ -46,15 +52,3 @@ def run():
 
 if __name__ == '__main__':
     run()
-    # To test your server:
-    # - Terminal:
-    #   $ curl http://localhost:8081
-    #   or
-    #   $ curl http://localhost:8081/table
-    #
-    # - Browser:
-    #   http://localhost:8081
-    #   http://localhost:8081/table
-    #
-    # - To test HTTP redirection:
-    #   curl http://localhost:8081/redirect -v

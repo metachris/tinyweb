@@ -295,6 +295,10 @@ class response:
         self.add_header('Content-Type', 'text/html')
         await self._send_headers()
 
+    async def html(self, content):
+        await self.start_html()
+        await self.send(content)
+
     async def send_file(self, filename, content_type=None, content_encoding=None, max_age=2592000):
         """Send local file as HTTP response.
         This function is generator.
@@ -634,8 +638,7 @@ class webserver:
             @app.catchall()
             def catchall_handler(req, resp):
                 response.code = 404
-                await response.start_html()
-                await response.send('<html><body><h1>My custom 404!</h1></html>\n')
+                await response.html('<html><body><h1>My custom 404</h1></html>\n')
         """
         params = { 'methods': [b'GET'], 'save_headers': [], 'max_body_size': 1024, 'allowed_access_control_headers': '*', 'allowed_access_control_origins': '*' }
         def _route(f):
@@ -649,8 +652,7 @@ class webserver:
         Example:
             @app.route('/')
             def index(req, resp):
-                await resp.start_html()
-                await resp.send('<html><body><h1>Hello, world!</h1></html>\n')
+                await resp.html('<html><body><h1>Hello, world!</h1></html>\n')
         """
         def _route(f):
             self.add_route(url, f, **kwargs)
