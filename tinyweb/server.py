@@ -1,8 +1,18 @@
 """
 Tiny Web - pretty simple and powerful web server for tiny platforms like ESP8266 / ESP32
+https://github.com/metachris/tinyweb/
+
 MIT license
-(C) Konstantin Belyalov 2017-2018
+
+Author: Konstantin Belyalov (2017-2018)
+Fork author: Chris Hager (twitter.com/metachris)
+
+Fork changes:
+- Auto mime-type for send_file
+- Removed logging dependency
+- Github actions for running tests
 """
+
 import uasyncio as asyncio
 import uasyncio.core
 import ujson as json
@@ -513,7 +523,7 @@ class webserver:
                 log_exc(e)
         except Exception as e:
             # Unhandled expection in user's method
-            log_error(req.path.decode())
+            log_err(req.path.decode())
             log_exc(e, "")
             try:
                 await resp.error(500)
