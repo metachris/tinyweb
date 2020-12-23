@@ -19,6 +19,7 @@ import ujson as json
 import gc
 import uos as os
 import sys
+import json
 import uerrno as errno
 import usocket as socket
 
@@ -29,39 +30,42 @@ try:
     log_err = log.error
     log_exc = log.exc
 except ImportError:
-    log_err = lambda msg: print('ERROR:WEB:%s' % msg)
+    def log_err(msg):
+        print('ERROR:WEB:%s' % msg)
+
     def log_exc(exc, msg):
         log_err(msg)
         sys.print_exception(exc)
 
 # uasyncio v3 is shipped with MicroPython 1.13, and contains some subtle
 # but breaking changes. See also https://github.com/peterhinch/micropython-async/blob/master/v3/README.md
-IS_UASYNCIO_V3 = hasattr(asyncio, "__version__") and asyncio.__version__ >= (3,)
+IS_UASYNCIO_V3 = hasattr(
+    asyncio, "__version__") and asyncio.__version__ >= (3,)
 
 
 MIME_TYPES_PER_EXT = {
-    ".txt"   : "text/plain",
-    ".htm"   : "text/html",
-    ".html"  : "text/html",
-    ".css"   : "text/css",
-    ".csv"   : "text/csv",
-    ".js"    : "application/javascript",
-    ".xml"   : "application/xml",
-    ".xhtml" : "application/xhtml+xml",
-    ".json"  : "application/json",
-    ".zip"   : "application/zip",
-    ".pdf"   : "application/pdf",
-    ".ts"    : "application/typescript",
-    ".woff"  : "font/woff",
-    ".woff2" : "font/woff2",
-    ".ttf"   : "font/ttf",
-    ".otf"   : "font/otf",
-    ".jpg"   : "image/jpeg",
-    ".jpeg"  : "image/jpeg",
-    ".png"   : "image/png",
-    ".gif"   : "image/gif",
-    ".svg"   : "image/svg+xml",
-    ".ico"   : "image/x-icon"
+    ".txt": "text/plain",
+    ".htm": "text/html",
+    ".html": "text/html",
+    ".css": "text/css",
+    ".csv": "text/csv",
+    ".js": "application/javascript",
+    ".xml": "application/xml",
+    ".xhtml": "application/xhtml+xml",
+    ".json": "application/json",
+    ".zip": "application/zip",
+    ".pdf": "application/pdf",
+    ".ts": "application/typescript",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+    ".ttf": "font/ttf",
+    ".otf": "font/otf",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon"
 }
 
 
@@ -298,6 +302,11 @@ class response:
     async def html(self, content):
         await self.start_html()
         await self.send(content)
+
+    async def json(self, body):
+        self.add_header('Content-Type', 'application/json')
+        await self._send_headers()
+        await self.send(json.dumps(body))
 
     async def send_file(self, filename, content_type=None, content_encoding=None, max_age=2592000):
         """Send local file as HTTP response.
@@ -640,7 +649,8 @@ class webserver:
                 response.code = 404
                 await response.html('<html><body><h1>My custom 404</h1></html>\n')
         """
-        params = { 'methods': [b'GET'], 'save_headers': [], 'max_body_size': 1024, 'allowed_access_control_headers': '*', 'allowed_access_control_origins': '*' }
+        params = {'methods': [b'GET'], 'save_headers': [], 'max_body_size': 1024, 'allowed_access_control_headers': '*', 'allowed_access_control_origins': '*'}
+
         def _route(f):
             self.catch_all_handler = (f, params)
             return f
