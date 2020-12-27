@@ -11,6 +11,25 @@ Simple, lightweight, async HTTP webserver for tiny devices like **ESP8266** / **
 * Great unittest coverage
 * No requirements on MicroPython 1.13+ (else `uasyncio`)
 
+**Easy installation**
+
+```wget https://raw.githubusercontent.com/metachris/tinyweb/master/tinyweb/server.py -O tinyweb.py```
+
+Or the minified version (9.3kb instead of 27kb):
+
+```wget https://raw.githubusercontent.com/metachris/tinyweb/master/tinyweb/server_min.py -O tinyweb.py```
+
+
+**Changes from [upstream tinyweb](https://github.com/belyalov/tinyweb):**
+
+* Removed logging depedency -- this can be downloaded without dependencies like this:
+* `send_file` with auto mime-type detection (based on filename)
+* `response.html(your_content_str)` and `response.json(your_response_obj)` helper
+* Minified distribution files (9.3kb instead of 27kb. using [python-minifier](https://github.com/dflook/python-minifier)):
+
+```
+pyminify tinyweb/server.py --remove-literal-statements > tinyweb/server_min.py
+```
 
 # Getting started
 
@@ -41,35 +60,34 @@ async def redirect(request, response):
 @app.route('/table')
 async def table(request, response):
     # Start HTTP response with content-type text/html
-    await response.html('<html><body><h1>Simple table</h1>'
-                        '<table border=1 width=400>'
-                        '<tr><td>Name</td><td>Some Value</td></tr>')
+    await response.html('<html><body><h1>Simple table</h1><table border=1 width=400><tr><td>Name</td><td>Some Value</td></tr>')
     for i in range(10):
         await response.send('<tr><td>Name{}</td><td>Value{}</td></tr>'.format(i, i))
-    await response.send('</table>'
-                        '</html>')
+    await response.send('</table></html>')
 
-app.run(host='0.0.0.0', port=8081)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8081)
 ```
 
-Simple? Let's try it!
-Flash your device with firmware, open REPL and type:
-```python
->>> import network
+Save this as webserver.py
 
+Let's try it! Flash your device with firmware, open REPL and type:
+
+```python
 # Connect to WiFi
+>>> import network
 >>> sta_if = network.WLAN(network.STA_IF)
 >>> sta_if.active(True)
 >>> sta_if.connect('<ssid>', '<password>')
 
-# Run Hello World! :)
->>> import examples.hello_world as hello
->>> hello.run()
+# Run the code
+>>> import webserver
+>>> webserver.app.run(host='0.0.0.0', port=80)
 ```
 
-That's it! :) Try it by open page `http://<your ip>:8081`
+That's it! :) Try it by open page `http://<your_ip>`
 
-Like it? Check more [examples](https://github.com/belyalov/tinyweb/tree/master/examples) then :)
+Like it? Check more [examples](https://github.com/metachris/tinyweb/tree/master/examples) then :)
 
 ### Limitations
 * HTTP protocol support - due to memory constrains only **HTTP/1.0** is supported (with exception for REST API - it uses HTTP/1.1 with `Connection: close`). Support of HTTP/1.1 may be added when `esp8266` platform will be completely deprecated.
